@@ -1,0 +1,9 @@
+* {
+    font-family: 'Nanum Pen Script', cursive;
+    font-size: 1.1em;
+}
+
+#chatbox {
+    max-height: 400px;
+    overflow: auto;
+}

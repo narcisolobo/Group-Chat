@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>Group Chat</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" type="text/css" media="screen" href="./css/style.css">
+  <link href="https://fonts.googleapis.com/css?family=Nanum+Pen+Script" rel="stylesheet">
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css" integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS" crossorigin="anonymous">
+</head>
+<body style="background-color:lightskyblue;">
+  <div class="container my-3">
+    <div class="mx-auto bg-light rounded shadow p-3 chat mb-2" id="chatbox"></div>
+    <div class="mx-auto bg-light rounded shadow pt-3 px-3 pb-2">
+      <form action="" id="form">
+        <div class="form-group row">
+          <div class="col-sm-10">
+            <input type="text" class="form-control" id="messagebody" placeholder="type your message here">
+          </div>
+          <div class="col-sm-2">
+            <button type="submit" class="btn btn-primary btn-block">send</button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="https://code.jquery.com/jquery-1.11.1.js"></script>
+  <script>
+    $(function () {
+      var socket = io();
+      var message = 'What should we call you?'
+      var username = window.prompt(message, 'Your Name');
+      socket.emit('username', username);
+
+      // broadcast event for new user
+      socket.on('new_user', function (messages) {
+        $('#chatbox').append(`<p style='margin-bottom: 0;'>${messages[messages.length-1].messagebody}</p>`);
+      });
+
+      // initialize chatbox
+      socket.on('initialize', function (messages) {
+        for (let i = 0; i < messages.length; i++) {
+          $('#chatbox').append(`<p style='margin-bottom: 0;'><span style='color:dodgerblue'>${messages[i].username}:</span> ${messages[i].messagebody}</p>`);
+        }
+      });
+
+      // user submits a message
+      $('#form').submit(function(e){
+        e.preventDefault();
+        var newMessage = {
+          username: username,
+          messagebody: $('#messagebody').val()
+        };
+        socket.emit('message_submit', newMessage);
+      });
+
+      // broadcast event for new messages
+      socket.on('new_message', function (messages) {
+        $('#chatbox').append(`<p style='margin-bottom: 0;'><span style='color:dodgerblue'>${messages[messages.length-1].username}: </span>${messages[messages.length-1].messagebody}</p>`);
+        $('#messagebody').val('');
+      });
+    });
+  </script>
+</body>
+</html>
